@@ -19,33 +19,75 @@
           --bg-color: #333;
           --text-color: #eee;
         }
+
+        a,
+        a:visited {
+          color: #4990e2;
+        }
+
+        a:is(:hover, :focus, :active) {
+          color: #2b78ff;
+        }
       }
 
       body {
         min-height: 100vh;
         background-color: var(--bg-color);
         display: grid;
+        place-content: center;
         font-family: system-ui, sans-serif;
         color: var(--text-color);
+      }
+
+      main {
+        text-align: center;
       }
     </style>
   </head>
   <body>
     <main>
       <h1>Welcome to the Find My Doggo Api v<span id="version">0.0.1</span></h1>
-      <p>App started at : <span id="started-at">...</span></p>
+      <p>App started at : <span id="start-date">...</span></p>
       <p>Uptime : <span id="uptime">...</span></p>
-      <a href="/api">API explorer</a>
+      <p>API explorer : <a href="/api">/api</a></p>
+      <p>OpenAPI spec : <a href="/api-json">/api-json</a></p>
     </main>
 
     <script>
+      const displayDuration = (durationSeconds) => {
+        const minutes = 60,
+          hours = 60,
+          days = 24;
+        const duration = {
+          d: durationSeconds / minutes / hours / days,
+          h: (durationSeconds / minutes / hours) % days,
+          m: (durationSeconds / minutes) % hours,
+          s: durationSeconds % minutes,
+        };
+        return Object.entries(duration)
+          .map(
+            ([key, val], i) =>
+              Math.trunc(val)
+                .toString()
+                .padStart(i && 2, '0') + key,
+          )
+          .join(' ');
+      };
+
       fetch('/ping')
-        .then((res) => res.json)
+        .then((res) => res.json())
         .then((res) => {
-          ['version', 'started-at'].forEach(
-            (field) =>
-              (document.querySelector(`#${field}`).textContent = res[field]),
-          );
+          document.querySelector('#version').textContent = res.version;
+          document.querySelector('#start-date').textContent = new Date(
+            res['start-date'],
+          ).toLocaleString();
+          const updateUptime = () => {
+            document.querySelector('#uptime').textContent = displayDuration(
+              (Date.now() - new Date(res['start-date']).getTime()) / 1000,
+            );
+          };
+          updateUptime();
+          setInterval(updateUptime, 1000);
         });
     </script>
   </body>

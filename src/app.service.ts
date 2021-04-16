@@ -7,7 +7,7 @@ export class AppService {
   getPing() {
     return {
       'start-date': startDate,
-      // version,
+      version: process.env.npm_package_version,
     };
   }
 }
