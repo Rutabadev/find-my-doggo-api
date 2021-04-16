@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress HtmlUnknownTarget -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,6 +9,7 @@
     />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Find My Doggo Api</title>
+    <!--suppress CssInvalidPseudoSelector -->
     <style>
       :root {
         --bg-color: #eee;
@@ -42,11 +44,15 @@
       main {
         text-align: center;
       }
+
+      h1 {
+        margin-bottom: 5rem;
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>Welcome to the Find My Doggo Api v<span id="version">0.0.1</span></h1>
+      <h1>Find My Doggo Api v<span id="version">0.0.1</span></h1>
       <p>App started at : <span id="start-date">...</span></p>
       <p>Uptime : <span id="uptime">...</span></p>
       <p>API explorer : <a href="/api">/api</a></p>
