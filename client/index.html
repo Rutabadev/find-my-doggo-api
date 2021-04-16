@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Find My Doggo Api</title>
+    <style>
+      :root {
+        --bg-color: #eee;
+        --text-color: #333;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #333;
+          --text-color: #eee;
+        }
+      }
+
+      body {
+        min-height: 100vh;
+        background-color: var(--bg-color);
+        display: grid;
+        font-family: system-ui, sans-serif;
+        color: var(--text-color);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Welcome to the Find My Doggo Api v<span id="version">0.0.1</span></h1>
+      <p>App started at : <span id="started-at">...</span></p>
+      <p>Uptime : <span id="uptime">...</span></p>
+      <a href="/api">API explorer</a>
+    </main>
+
+    <script>
+      fetch('/ping')
+        .then((res) => res.json)
+        .then((res) => {
+          ['version', 'started-at'].forEach(
+            (field) =>
+              (document.querySelector(`#${field}`).textContent = res[field]),
+          );
+        });
+    </script>
+  </body>
+</html>

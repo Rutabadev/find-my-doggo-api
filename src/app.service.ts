@@ -4,7 +4,10 @@ const startDate = new Date();
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return `App started at ${startDate.toLocaleString()}`;
+  getPing() {
+    return {
+      'start-date': startDate,
+      // version,
+    };
   }
 }
