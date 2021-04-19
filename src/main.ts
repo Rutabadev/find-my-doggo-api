@@ -12,6 +12,7 @@ async function bootstrap() {
     .setTitle('Find My Doggo API')
     .setDescription('The API to find my doggo')
     .setVersion(process.env.npm_package_version)
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
