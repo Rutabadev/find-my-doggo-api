@@ -7,6 +7,7 @@ import { User } from './users/entities/user.entity';
 import { Connection } from 'typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { join } from 'path';
       synchronize: !process.env.PRODUCTION,
     }),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

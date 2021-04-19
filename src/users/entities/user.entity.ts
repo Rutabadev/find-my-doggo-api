@@ -14,7 +14,7 @@ export class User {
 
   @Column()
   @Length(3)
-  @Exclude()
+  @Exclude({ toPlainOnly: true })
   @ApiHideProperty()
   password: string;
 
