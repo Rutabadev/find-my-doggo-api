@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Request,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,11 +15,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles/roles.decorator';
+import { RolesGuard } from '../auth/roles/roles.guard';
 
 @ApiTags('Users')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
-@ApiBearerAuth()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -32,41 +32,39 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  /**
-   * Get currently logged user information
-   */
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Get('/me')
-  async me(@Request() req) {
-    return req.user;
-  }
-
   @Post()
-  @UseGuards(JwtAuthGuard)
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Get()
-  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @Get(':id')
   findOne(@Param('id') id: number) {
     return this.usersService.findById(id);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
-  @Delete(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
+  @Delete(':id')
+  remove(@Param('id') id: number) {
     return this.usersService.remove(id);
   }
 }

@@ -12,17 +12,12 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<Omit<User, 'password'>> {
+  async validateUser(email: string, password: string): Promise<User> {
     const user = await this.usersService.findByEmail(email);
     if (!user || !(await verify(user.password, password))) {
       return null;
     }
-
-    const { password: _removedPassword, ...userNoPassword } = user;
-    return userNoPassword;
+    return user;
   }
 
   async login(user: User): Promise<LoggedInUserDto> {

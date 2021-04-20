@@ -1,7 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity()
 export class User {
@@ -22,4 +29,8 @@ export class User {
   @IsEmail()
   @ApiProperty({ format: 'email' })
   email: string;
+
+  @ManyToMany(() => Role, { cascade: true, eager: true })
+  @JoinTable()
+  roles: Role[];
 }

@@ -6,8 +6,11 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Setup global features
   app.useGlobalPipes(new ValidationPipe());
+  // app.useGlobalGuards(new RolesGuard(new Reflector()));
 
+  // Setup auto generated Swagger
   const config = new DocumentBuilder()
     .setTitle('Find My Doggo API')
     .setDescription('The API to find my doggo')
