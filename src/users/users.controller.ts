@@ -23,6 +23,7 @@ import { RolesGuard } from '../auth/roles/roles.guard';
 import { RolesService } from '../roles/roles.service';
 import { hash } from 'argon2';
 import * as _ from 'lodash';
+import { User } from './entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -59,7 +60,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
   }
 
@@ -67,21 +68,35 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(
-    @Request() req,
-    @Param('id') id: number,
+    @Request() { user: currentUser }: { user: User },
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
+    if (
+      !_.map(currentUser.roles, 'name').includes('admin') &&
+      currentUser.id.toString() !== id
+    ) {
+      throw new HttpException(
+        "Can't update another user than yourself.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     if (updateUserDto.password) {
       updateUserDto.password = await hash(updateUserDto.password);
     }
+
     let user = await this.usersService.findById(id);
     const roles = await this.rolesService.findByStrings(updateUserDto.roles);
+
     user = { ...user, ...updateUserDto, roles };
+
     try {
       await this.usersService.save(user);
     } catch (error) {
       throw new HttpException(error.detail, HttpStatus.BAD_REQUEST);
     }
+
     // The password should be excluded from entity conf by strangely it is not
     return _.omit(user, 'password');
   }
@@ -89,7 +104,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 }

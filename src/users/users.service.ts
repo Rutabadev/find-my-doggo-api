@@ -34,7 +34,7 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: string): Promise<User> {
     return this.userRepository.findOne(id);
   }
 
@@ -46,7 +46,7 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async remove(id: number): Promise<DeleteResult> {
+  async remove(id: string): Promise<DeleteResult> {
     return this.userRepository.delete(id);
   }
 }
