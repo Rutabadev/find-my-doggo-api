@@ -12,7 +12,6 @@ services:
       POSTGRES_DB: apidb
   admin:
     image: adminer
-    restart: always
     depends_on:
       - db
     ports:

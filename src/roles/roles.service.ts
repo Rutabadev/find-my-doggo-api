@@ -11,6 +11,6 @@ export class RolesService {
   ) {}
 
   findByStrings(roles: string[]) {
-    return this.roleRepository.find({ name: In(roles) });
+    return this.roleRepository.find({ name: In(roles || []) });
   }
 }
