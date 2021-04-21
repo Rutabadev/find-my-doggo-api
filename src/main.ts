@@ -5,10 +5,6 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const majorVersionMatcher = /^(.*?)\./;
-  app.setGlobalPrefix(
-    `v${process.env.npm_package_version.match(majorVersionMatcher)[1]}`,
-  );
 
   // Setup global features
   app.useGlobalPipes(new ValidationPipe());
