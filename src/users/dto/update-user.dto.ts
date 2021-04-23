@@ -5,10 +5,11 @@ import { IsOptional, Length } from 'class-validator';
 
 export class UpdateUserDto extends OmitType(PartialType(User), ['roles']) {
   @Column()
-  @IsOptional()
   @Length(3)
+  @IsOptional()
   password?: string;
 
   @Column()
-  roles: string[];
+  @IsOptional()
+  roles?: string[];
 }

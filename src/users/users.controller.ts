@@ -24,6 +24,7 @@ import { RolesService } from '../roles/roles.service';
 import { hash } from 'argon2';
 import * as _ from 'lodash';
 import { User } from './entities/user.entity';
+import { Role } from '../roles/entities/role.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -87,7 +88,11 @@ export class UsersController {
     }
 
     let user = await this.usersService.findById(id);
-    const roles = await this.rolesService.findByStrings(updateUserDto.roles);
+
+    let roles: Role[];
+    if (updateUserDto.roles) {
+      roles = await this.rolesService.findByStrings(updateUserDto.roles);
+    }
 
     user = { ...user, ...updateUserDto, roles };
 
@@ -97,8 +102,7 @@ export class UsersController {
       throw new HttpException(error.detail, HttpStatus.BAD_REQUEST);
     }
 
-    // The password should be excluded from entity conf by strangely it is not
-    return _.omit(user, 'password');
+    return this.usersService.findById(id);
   }
 
   @ApiBearerAuth()
