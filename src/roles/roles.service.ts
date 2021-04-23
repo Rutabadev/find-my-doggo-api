@@ -10,7 +10,11 @@ export class RolesService {
     private roleRepository: Repository<Role>,
   ) {}
 
-  findByStrings(roles: string[]) {
+  findByStrings(roles: string[]): Promise<Role[]> {
     return this.roleRepository.find({ name: In(roles || []) });
+  }
+
+  findAll(): Promise<Role[]> {
+    return this.roleRepository.find();
   }
 }

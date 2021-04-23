@@ -12,6 +12,10 @@ import { Role } from '../../roles/entities/role.entity';
 
 @Entity()
 export class User {
+  constructor(partialUser: Partial<User>) {
+    Object.assign(this, partialUser);
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 

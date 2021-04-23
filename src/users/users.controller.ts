@@ -94,7 +94,7 @@ export class UsersController {
       roles = await this.rolesService.findByStrings(updateUserDto.roles);
     }
 
-    user = { ...user, ...updateUserDto, roles };
+    user = new User({ ...user, ...updateUserDto, roles: roles ?? user.roles });
 
     try {
       await this.usersService.save(user);
@@ -102,7 +102,7 @@ export class UsersController {
       throw new HttpException(error.detail, HttpStatus.BAD_REQUEST);
     }
 
-    return this.usersService.findById(id);
+    return user;
   }
 
   @ApiBearerAuth()
