@@ -16,7 +16,12 @@ import { RolesModule } from './roles/roles.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      ssl: process.env.NODE_ENV === 'production',
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? {
+              rejectUnauthorized: false,
+            }
+          : undefined,
       url:
         process.env.DATABASE_URL ?? 'postgres://user:pass@localhost:5432/apidb',
       entities: ['dist/**/*.entity{.ts,.js}'],
