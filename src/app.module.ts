@@ -16,11 +16,12 @@ import { RolesModule } from './roles/roles.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
+      ssl: !!process.env.PRODUCTION,
       url:
         process.env.DATABASE_URL ?? 'postgres://user:pass@localhost:5432/apidb',
       entities: ['dist/**/*.entity{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: !process.env.PRODUCTION,
+      synchronize: true,
     }),
     UsersModule,
     AuthModule,
