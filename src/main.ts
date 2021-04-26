@@ -16,6 +16,7 @@ async function bootstrap() {
   // Setup auto generated Swagger
   const config = new DocumentBuilder()
     .addServer(`http://localhost:${port}`)
+    .addServer('https://find-my-doggo-api.herokuapp.com')
     .setTitle('Find My Doggo API')
     .setDescription('The API to find my doggo')
     .setVersion(process.env.npm_package_version)
