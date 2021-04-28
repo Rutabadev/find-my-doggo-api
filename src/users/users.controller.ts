@@ -4,8 +4,10 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
+  OnModuleInit,
   Param,
   Patch,
   Post,
@@ -25,14 +27,20 @@ import { hash } from 'argon2';
 import * as _ from 'lodash';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { sendMail } from '../utils/sendMail';
+import { ChangePasswordDto } from './dto/reset-password.dto';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CHANGE_PASSWORD_EXPIRATION } from './constants';
 
 @ApiTags('Users')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
-export class UsersController {
+export class UsersController implements OnModuleInit {
   constructor(
     private readonly usersService: UsersService,
     private readonly rolesService: RolesService,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   /**
@@ -41,6 +49,56 @@ export class UsersController {
   @Post('/signup')
   async signup(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
+  }
+
+  /**
+   * Send an email to the user to reset password.
+   */
+  @Post('/forgot-password')
+  @HttpCode(200)
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(forgotPasswordDto.email);
+    if (!user) {
+      return;
+    }
+    const token = await this.usersService.createChangePassword(user);
+    const message = `
+      <div style="font-family: system-ui, sans-serif; text-align: center">
+         <p>Click this button to reset your password :</p>
+         <a
+            href="https://find-doggo.herokuapp.com/reset-password/${token}"
+            style="
+               display: inline-block;
+               border: none;
+               border-radius: 0.25rem;
+               padding: 0.5rem 1.5rem;
+               background-color: rgb(79, 70, 229);
+               color: rgb(243, 244, 246);
+               font-size: 1rem;
+               text-decoration: none;
+            "
+         >
+            Reset Password
+         </a>
+      </div>
+    `;
+    this.schedulerRegistry.addTimeout(
+      `delete ${token}`,
+      setTimeout(
+        () => this.usersService.deleteChangePassword(token),
+        CHANGE_PASSWORD_EXPIRATION,
+      ),
+    );
+    sendMail(forgotPasswordDto.email, 'Reset Password', message);
+  }
+
+  @Post('/reset-password')
+  @HttpCode(204)
+  async resetPassword(@Body() changePasswordDto: ChangePasswordDto) {
+    await this.usersService.resetPassword(
+      changePasswordDto.uuid,
+      changePasswordDto.password,
+    );
   }
 
   @ApiBearerAuth()
@@ -110,5 +168,10 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  async onModuleInit() {
+    const deletion = await this.usersService.cleanChangePassword();
+    console.log(deletion);
   }
 }
