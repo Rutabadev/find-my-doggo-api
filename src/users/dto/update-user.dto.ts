@@ -3,7 +3,10 @@ import { User } from '../entities/user.entity';
 import { Column } from 'typeorm';
 import { IsArray, IsOptional, IsString, Length } from 'class-validator';
 
-export class UpdateUserDto extends OmitType(PartialType(User), ['roles']) {
+export class UpdateUserDto extends OmitType(PartialType(User), [
+  'roles',
+  'emailValid',
+]) {
   @Column()
   @Length(3)
   @IsOptional()
