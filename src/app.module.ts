@@ -9,6 +9,7 @@ import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TokenModule } from './token/token.module';
 
 @Module({
   imports: [
@@ -33,10 +34,13 @@ import { ScheduleModule } from '@nestjs/schedule';
     RolesModule,
     UsersModule,
     ScheduleModule.forRoot(),
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {
-  constructor(private connection: Connection) {}
+  constructor(private connection: Connection) {
+    connection.createQueryRunner().dropTable('change_password'); // TODO : remove next commit
+  }
 }

@@ -1,20 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { DeleteResult, LessThan, Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { hash } from 'argon2';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ChangePassword } from './entities/change-password.entity';
-import { v4 as uuidv4 } from 'uuid';
-import { CHANGE_PASSWORD_EXPIRATION } from './constants';
+import { TokenService } from '../token/token.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(ChangePassword)
-    private changePasswordRepository: Repository<ChangePassword>,
+    private tokenService: TokenService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -55,38 +52,40 @@ export class UsersService {
     return this.userRepository.delete(id);
   }
 
-  async createChangePassword(user: User): Promise<string> {
-    const uuid = uuidv4();
-    await this.changePasswordRepository.save({
-      user,
-      uuid,
-    });
-
-    return uuid;
-  }
-
-  deleteChangePassword(uuid: string) {
-    return this.changePasswordRepository.delete(uuid);
-  }
-
-  cleanChangePassword() {
-    return this.changePasswordRepository.delete({
-      createdDate: LessThan(new Date(Date.now() - CHANGE_PASSWORD_EXPIRATION)),
-    });
-  }
-
   async resetPassword(uuid: string, password: string) {
-    const changePassword = await this.changePasswordRepository.findOne({
-      where: { uuid },
-    });
-    if (!changePassword) {
+    const token = await this.tokenService.getToken(uuid);
+    if (!token) {
       throw new HttpException(
         'This reset link is expired.',
         HttpStatus.BAD_REQUEST,
       );
     }
-    changePassword.user.password = await hash(password);
-    await this.userRepository.save(changePassword.user);
-    await this.changePasswordRepository.delete(changePassword.uuid);
+    const user = await this.userRepository.findOne(token.value);
+    if (!user) {
+      throw new HttpException(
+        'The user for this link does not exist.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    user.password = await hash(password);
+    await this.userRepository.save(user);
+    await this.tokenService.deleteToken(uuid);
+  }
+
+  async validateEmail(uuid: string) {
+    const token = await this.tokenService.getToken(uuid);
+    if (!token) {
+      throw new HttpException('This link is expired.', HttpStatus.BAD_REQUEST);
+    }
+    const user = await this.userRepository.findOne(token.value);
+    if (!user) {
+      throw new HttpException(
+        'The user for this link does not exist.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    user.emailValid = true;
+    await this.userRepository.save(user);
+    await this.tokenService.deleteToken(uuid);
   }
 }

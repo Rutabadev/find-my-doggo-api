@@ -34,6 +34,9 @@ export class User {
   @ApiProperty({ format: 'email' })
   email: string;
 
+  @Column({ default: false })
+  emailValid: boolean;
+
   @ManyToMany(() => Role, { cascade: true, eager: true })
   @JoinTable()
   roles: Role[];

@@ -7,7 +7,6 @@ import {
   HttpCode,
   HttpException,
   HttpStatus,
-  OnModuleInit,
   Param,
   Patch,
   Post,
@@ -31,15 +30,19 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { sendMail } from '../utils/sendMail';
 import { ChangePasswordDto } from './dto/reset-password.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { CHANGE_PASSWORD_EXPIRATION } from './constants';
+import { TOKEN_EXPIRATION } from '../token/constants';
+import { singleButtonTemplate } from '../utils/mailTemplate';
+import { TokenService } from '../token/token.service';
+import { ValidateEmailDto } from './dto/validate-email.dto';
 
 @ApiTags('Users')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
-export class UsersController implements OnModuleInit {
+export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly rolesService: RolesService,
+    private readonly tokenService: TokenService,
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
@@ -48,7 +51,15 @@ export class UsersController implements OnModuleInit {
    */
   @Post('/signup')
   async signup(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const user = await this.usersService.create(createUserDto);
+    const token = await this.tokenService.setToken(user.id.toString());
+    const message = singleButtonTemplate(
+      'Click this button to validate your email :',
+      `https://find-doggo.herokuapp.com/validate-email/${token}`,
+      'Validate',
+    );
+    sendMail(user.email, 'Validate your email', message);
+    return user;
   }
 
   /**
@@ -61,33 +72,15 @@ export class UsersController implements OnModuleInit {
     if (!user) {
       return;
     }
-    const token = await this.usersService.createChangePassword(user);
-    const message = `
-      <div style="font-family: system-ui, sans-serif; text-align: center">
-         <p>Click this button to reset your password :</p>
-         <a
-            href="https://find-doggo.herokuapp.com/reset-password/${token}"
-            style="
-               display: inline-block;
-               border: none;
-               border-radius: 0.25rem;
-               padding: 0.5rem 1.5rem;
-               background-color: rgb(79, 70, 229);
-               color: rgb(243, 244, 246);
-               font-size: 1rem;
-               text-decoration: none;
-            "
-         >
-            Reset Password
-         </a>
-      </div>
-    `;
+    const token = await this.tokenService.setToken(user.id.toString());
+    const message = singleButtonTemplate(
+      'Click this button to reset your password :',
+      `https://find-doggo.herokuapp.com/reset-password/${token}`,
+      'Reset Password',
+    );
     this.schedulerRegistry.addTimeout(
       `delete ${token}`,
-      setTimeout(
-        () => this.usersService.deleteChangePassword(token),
-        CHANGE_PASSWORD_EXPIRATION,
-      ),
+      setTimeout(() => this.tokenService.deleteToken(token), TOKEN_EXPIRATION),
     );
     sendMail(forgotPasswordDto.email, 'Reset Password', message);
   }
@@ -99,6 +92,12 @@ export class UsersController implements OnModuleInit {
       changePasswordDto.uuid,
       changePasswordDto.password,
     );
+  }
+
+  @Post('validate-email')
+  @HttpCode(204)
+  async validateEmail(@Body() validateEmailDto: ValidateEmailDto) {
+    await this.usersService.validateEmail(validateEmailDto.uuid);
   }
 
   @ApiBearerAuth()
@@ -168,10 +167,5 @@ export class UsersController implements OnModuleInit {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
-  }
-
-  async onModuleInit() {
-    const deletion = await this.usersService.cleanChangePassword();
-    console.log(deletion);
   }
 }
