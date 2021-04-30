@@ -41,6 +41,7 @@ import { TokenModule } from './token/token.module';
 })
 export class AppModule {
   constructor(private connection: Connection) {
-    connection.createQueryRunner().dropTable('change_password'); // TODO : remove next commit
+    // Create startup migration like stuff here
+    // connection.createQueryRunner()...
   }
 }
