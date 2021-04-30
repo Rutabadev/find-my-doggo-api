@@ -165,7 +165,19 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(
+    @Request() { user: currentUser }: { user: User },
+    @Param('id') id: string,
+  ) {
+    if (
+      !_.map(currentUser.roles, 'name').includes('admin') &&
+      currentUser.id.toString() !== id
+    ) {
+      throw new HttpException(
+        "Can't delete another user than yourself.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return this.usersService.remove(id);
   }
 }
