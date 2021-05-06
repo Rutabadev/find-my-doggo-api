@@ -74,7 +74,7 @@ export class UsersController {
       return;
     }
 
-    // Check if a password reset has already been requested and not yet expired
+    // Check if a password reset has already been requested and is not yet expired
     const existingToken = this.tokenService.getTokenByValue(user.id.toString());
     if (existingToken) {
       return;
