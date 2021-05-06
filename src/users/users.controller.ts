@@ -69,9 +69,17 @@ export class UsersController {
   @HttpCode(200)
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.usersService.findByEmail(forgotPasswordDto.email);
-    if (!user) {
+
+    if (!user || !user.emailValid) {
       return;
     }
+
+    // Check if a password reset has already been requested and not yet expired
+    const existingToken = this.tokenService.getTokenByValue(user.id.toString());
+    if (existingToken) {
+      return;
+    }
+
     const token = await this.tokenService.setToken(user.id.toString());
     const message = singleButtonTemplate(
       'Click this button to reset your password :',

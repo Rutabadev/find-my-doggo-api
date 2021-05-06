@@ -23,6 +23,10 @@ export class TokenService implements OnModuleInit {
     return this.tokenRepository.findOne(key);
   }
 
+  getTokenByValue(value: string) {
+    return this.tokenRepository.findOne({ where: { value } });
+  }
+
   deleteToken(key: string) {
     return this.tokenRepository.delete(key);
   }
