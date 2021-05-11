@@ -40,5 +40,6 @@ export class User {
   @ManyToMany(() => Role, { cascade: true, eager: true })
   @JoinTable()
   @Transform(({ value: roles }) => roles.map((role) => role.name))
+  @ApiProperty({ type: 'array', items: { type: 'string' } })
   roles: Role[];
 }
