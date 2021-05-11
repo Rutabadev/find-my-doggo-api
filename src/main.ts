@@ -9,7 +9,7 @@ async function bootstrap() {
   app.enableCors();
 
   // Setup global features
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const port = process.env.PORT || 3001;
