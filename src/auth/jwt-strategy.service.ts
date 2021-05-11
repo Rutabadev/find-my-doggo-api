@@ -5,7 +5,6 @@ import { jwtConstants } from './constants';
 import { JwtDto } from './dto/jwt.dto';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import * as _ from 'lodash';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -16,8 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: jwtConstants.secret,
     });
   }
-  async validate(payload: JwtDto): Promise<Omit<User, 'password'>> {
-    const user = await this.usersService.findByEmail(payload.sub);
-    return _.omit(user, 'password');
+  validate(payload: JwtDto): Promise<User> {
+    return this.usersService.findByEmail(payload.sub);
   }
 }

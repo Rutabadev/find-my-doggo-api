@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { IsEmail, IsNotEmpty, Length } from 'class-validator';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Transform } from 'class-transformer';
 import { Role } from '../../roles/entities/role.entity';
 
 @Entity()
@@ -39,5 +39,6 @@ export class User {
 
   @ManyToMany(() => Role, { cascade: true, eager: true })
   @JoinTable()
+  @Transform(({ value: roles }) => roles.map((role) => role.name))
   roles: Role[];
 }
