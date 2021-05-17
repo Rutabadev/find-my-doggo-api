@@ -32,6 +32,7 @@ import { TOKEN_EXPIRATION } from '../token/constants';
 import { singleButtonTemplate } from '../utils/mailTemplate';
 import { TokenService } from '../token/token.service';
 import { ValidateEmailDto } from './dto/validate-email.dto';
+import { IdDto } from './dto/id.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -123,8 +124,13 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findById(id);
+  async findOne(@Param() { id }: IdDto) {
+    console.log({ id });
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      return new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+    return user;
   }
 
   @ApiBearerAuth()
@@ -132,12 +138,12 @@ export class UsersController {
   @Patch(':id')
   async update(
     @Request() { user: currentUser }: { user: User },
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     if (
       !_.map(currentUser.roles, 'name').includes('admin') &&
-      currentUser.id.toString() !== id
+      currentUser.id !== id
     ) {
       throw new HttpException(
         "Can't update another user than yourself.",

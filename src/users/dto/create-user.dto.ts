@@ -3,7 +3,7 @@ import { User } from '../entities/user.entity';
 import { Column } from 'typeorm';
 import { Length } from 'class-validator';
 
-export class CreateUserDto extends PickType(User, ['name', 'email'] as const) {
+export class CreateUserDto extends PickType(User, ['name', 'email']) {
   @Column()
   @Length(3)
   password: string;
