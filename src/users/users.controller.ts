@@ -102,8 +102,8 @@ export class UsersController {
 
   @Post('validate-email')
   @HttpCode(204)
-  async validateEmail(@Body() validateEmailDto: ValidateEmailDto) {
-    await this.usersService.validateEmail(validateEmailDto.uuid);
+  async validateEmail(@Body() { uuid }: ValidateEmailDto) {
+    await this.usersService.validateEmail(uuid);
   }
 
   @ApiBearerAuth()
