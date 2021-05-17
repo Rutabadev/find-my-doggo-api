@@ -151,6 +151,12 @@ export class UsersController {
       );
     }
 
+    if (
+      !_.map(currentUser.roles, 'name').includes('admin') &&
+      updateUserDto.hasOwnProperty('emailValid')
+    ) {
+      delete updateUserDto.emailValid;
+    }
     if (updateUserDto.password) {
       updateUserDto.password = await hash(updateUserDto.password);
     }
